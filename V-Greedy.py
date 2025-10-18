@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep  2 16:03:24 2025
-
-@author: wwj19
-"""
-
 from typing import Any, Dict, Hashable, List, Optional, Set, Tuple
 import networkx as nx
 import numpy as np
