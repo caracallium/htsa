@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep  3 17:33:10 2025
-
-@author: wwj19
-"""
-
 from typing import Any, Dict, Hashable, List, Optional, Set, Tuple
 import heapq
 import networkx as nx
