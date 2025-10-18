@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep  3 17:50:55 2025
-
-@author: wwj19
-"""
-
 import networkx as nx
 import numpy as np
 import heapq
