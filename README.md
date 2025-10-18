@@ -101,3 +101,4 @@ where `sim(ts_r, ts_v)` is the similarity between the root’s time series and n
   - Use V-Greedy for quick approximate results.  
   - Use P-Greedy for tree-structured data and better quality.  
   - Use OSS when exact optimality is required.
+  - The method is similarity-agnostic: any function that maps two sequences to a real-valued score can be plugged in.
