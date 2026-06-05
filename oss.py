@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 import heapq
-from typing import Dict, Hashable, List, Optional, Set, Tuple
+from typing import Any, Dict, Hashable, List, Optional, Set, Tuple
 
 
 # node_dict: {node_id: (time_series: np.ndarray, value: float, other_info: dict)}
@@ -9,6 +9,7 @@ NodeDict = Dict[Hashable, Tuple[np.ndarray, float, Dict[str, Any]]]
 
 # Nonlinear parameter for similarity mapping
 NONLINEAR: float = 0.9
+EPS: float = 1e-12
 
 
 def _sim_fds(ts1: np.ndarray, ts2: np.ndarray, a: float = NONLINEAR) -> float:
@@ -33,6 +34,9 @@ def _sim_fds(ts1: np.ndarray, ts2: np.ndarray, a: float = NONLINEAR) -> float:
 
     s = float(np.dot(F / nF, G / nG))  # in [-1, 1]
     return float((s - a) / (1.0 - a * s))
+
+
+sim = _sim_fds
 
 
 def expand_subgraph_hybrid_oss(G, node_dict, node_x):
@@ -194,7 +198,7 @@ def find_k_best_subgraphs_lazy(
         """Recompute (sub_nodes, g) for `seed` on current G_unused and push to heap."""
         if (seed not in node_dict) or (not G_unused.has_node(seed)):
             return
-        sub_nodes, g_value = expand_subgraph_pgreedy_tree(G_unused, node_dict, seed)
+        sub_nodes, g_value = expand_subgraph_hybrid_oss(G_unused, node_dict, seed)
         cache[seed] = (sub_nodes, g_value)
         version[seed] = version.get(seed, 0) + 1
         heapq.heappush(heap, (-float(g_value), str(seed), version[seed], seed))

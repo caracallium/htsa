@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the KDD 2026 paper and this repository."
+title: "Structure-Aware Abstraction of Hierarchical Time Series"
+type: software
+repository-code: "https://github.com/caracallium/htsa"
+url: "https://github.com/caracallium/htsa"
+authors:
+  - family-names: Wu
+    given-names: Yihan
+  - family-names: Zhu
+    given-names: Xuliang
+  - family-names: Li
+    given-names: Guozhong
+  - family-names: Wang
+    given-names: Kai
+  - family-names: Lin
+    given-names: Xuemin
+preferred-citation:
+  type: conference-paper
+  title: "Structure-Aware Abstraction of Hierarchical Time Series"
+  authors:
+    - family-names: Wu
+      given-names: Yihan
+    - family-names: Zhu
+      given-names: Xuliang
+    - family-names: Li
+      given-names: Guozhong
+    - family-names: Wang
+      given-names: Kai
+    - family-names: Lin
+      given-names: Xuemin
+  year: 2026
+  conference:
+    name: "Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining"
+
+# Zenodo DOI placeholder: after Zenodo mints the repository DOI, add:
+# identifiers:
+#   - type: doi
+#     value: "10.5281/zenodo.xxxxxxx"

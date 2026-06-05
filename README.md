@@ -1,104 +1,124 @@
-# Subgraph Selection Algorithms
+# Structure-Aware Abstraction of Hierarchical Time Series
 
-This repository implements three strategies for selecting rooted subgraphs in directed trees or DAGs.  
-Each node is represented as:
+## Overview
 
-node_dict[node_id] = (time_series: np.ndarray, value: float, extra_info: dict)
+This repository contains the artifact code for **Structure-Aware Abstraction of Hierarchical Time Series**. It implements V-Greedy, P-Greedy, and OSS for hierarchical time series abstraction on directed trees or directed acyclic hierarchy graphs.
 
-The optimization objective for a node set **S** rooted at **r** is:
+The algorithms take a directed parent-to-child hierarchy and a time series attached to each node, then select representative subgraphs that balance temporal similarity and node values.
 
-\[
-g(S) = \frac{\left(\sum_{v\in S}\text{sim}(ts_r, ts_v)\right)\left(\sum_{v\in S}\text{value}_v\right)}{|S|}
-\]
+## Repository structure
 
-where `sim(ts_r, ts_v)` is the similarity between the root’s time series and node v’s time series.
+```text
+.
+├── V-Greedy.py              # Original V-Greedy implementation
+├── P-Greedy.py              # Original P-Greedy implementation
+├── oss.py                   # OSS implementation
+├── v_greedy.py              # Import-friendly wrapper for V-Greedy.py
+├── p_greedy.py              # Import-friendly wrapper for P-Greedy.py
+├── examples/
+│   └── minimal_demo.py      # Lightweight synthetic demo
+├── requirements.txt         # Python dependencies
+├── CITATION.cff             # Citation metadata
+├── LICENSE                  # MIT license
+└── README.md
+```
 
----
+The original files with hyphenated names are kept for compatibility. The wrapper files make the V-Greedy and P-Greedy implementations easier to import from Python code.
 
-## Similarity Function
+## Installation
 
-**Function**: `sim(ts1, ts2, a=0.9)`
+```bash
+git clone https://github.com/caracallium/htsa.git
+cd htsa
+pip install -r requirements.txt
+```
 
-- Frequency-Domain Similarity (FDS) with monotonic mapping.  
-- **Steps**:  
-  1. Mean-center both series.  
-  2. Take FFT magnitudes (first half spectrum).  
-  3. Compute cosine similarity.  
-  4. Map via `(s - a) / (1 - a*s)` (default `a = 0.9`).  
-- **Returns**: float in range `[-1, 1]`.
+The code depends only on NumPy and NetworkX.
 
----
+## Input format
 
-## V-Greedy
+The algorithms expect a `networkx.DiGraph` and a node metadata dictionary:
 
-**Library name**: `V-Greedy`  
+```python
+node_dict[node_id] = (time_series, value, extra_info)
+```
 
-**Functions**:
-- `expand_subgraph_greedy(G, node_dict, root, sim)`
-- `find_k_best_subgraphs(G, node_dict, k, sim)`
+where:
 
-**Description**:
-- Greedy expansion from the root, considering only one-step frontier nodes (direct successors).  
-- Iteratively expands while the score improves.  
-- `find_k_best_subgraphs` applies the greedy expansion up to **k** times, selecting disjoint subgraphs. After each pick, incident edges are removed to avoid overlap.  
-- **Advantages**: simple, fast heuristic.
+- `node_id` is the node identifier used in the graph.
+- `time_series` is a one-dimensional NumPy array.
+- `value` is a numeric node weight or importance value.
+- `extra_info` is an optional dictionary for labels or other metadata.
 
----
+Edges in the graph should point from parent nodes to child nodes. The hierarchy should be a directed tree or DAG. P-Greedy is tree-oriented and uses root-to-node paths.
 
-## P-Greedy
+## Usage
 
-**Library name**: `P-Greedy`  
+Use the import-friendly wrappers for V-Greedy and P-Greedy:
 
-**Functions**:
-- `expand_subgraph_pgreedy_tree(G, node_dict, root)`
-- `find_k_best_subgraphs_lazy(G, node_dict, k)`
+```python
+import networkx as nx
+import numpy as np
 
-**Description**:
-- Works on trees with a global candidate set.  
-- At each iteration, evaluates for every candidate **u** the entire path suffix \(A_u\) (from boundary node **b** to **u**).  
-- Selects the \(A_u\) that maximizes score gain.  
-- Expansion continues until no candidate improves the score.  
-- `find_k_best_subgraphs_lazy` manages multiple subgraphs using a lazy max-heap with caching:  
-  - Keeps a working copy of the graph.  
-  - Seeds are cached with version numbers.  
-  - Uses lazy invalidation of heap entries.  
-  - After selecting a subgraph, recomputes only ancestors of selected nodes.  
-- **Advantages**: more global and path-aware than V-Greedy, still efficient for trees.
+from v_greedy import find_k_best_subgraphs as run_v_greedy
+from p_greedy import find_k_best_subgraphs_lazy as run_p_greedy
+from oss import expand_subgraph_hybrid_oss, find_k_best_subgraphs_lazy as run_oss
 
----
+G = nx.DiGraph()
+G.add_edges_from([("root", "a"), ("root", "b"), ("a", "a1")])
 
-## OSS
+t = np.linspace(0.0, 1.0, 16)
+node_dict = {
+    "root": (np.sin(t), 5.0, {}),
+    "a": (np.sin(t + 0.1), 3.0, {}),
+    "a1": (np.sin(t + 0.2), 2.0, {}),
+    "b": (np.cos(t), 1.0, {}),
+}
 
-**Library name**: `OSS`  
+v_subgraphs, v_total = run_v_greedy(G, node_dict, k=2)
+p_subgraphs, p_total = run_p_greedy(G, node_dict, k=2)
+oss_root_nodes, oss_root_score = expand_subgraph_hybrid_oss(G, node_dict, "root")
+oss_subgraphs, oss_total = run_oss(G, node_dict, k=2)
+```
 
-**Function**:
-- `expand_subgraph_hybrid_oss(G, node_dict, root)`
+You can still run or load the original scripts directly, but `V-Greedy.py` and `P-Greedy.py` are not valid module names for normal `import` statements because of the hyphen.
 
-**Description**:
-- Exact bottom-up dynamic programming on a single root’s subtree.  
-- Each node stores a state table:  
-  `(count s, sum_value t) → (sum_sim, selection)`  
-- For each child, merge its state table with the parent’s by full cross enumeration.  
-- Apply dominance filtering: keep `(s, t, sim)` only if no other state strictly dominates it (`s' <= s`, `t' >= t`, `sim' >= sim`).  
-- Reconstruct the selected node set from the best key.  
-- **Advantages**: produces the exact optimal solution for a given root, but computationally heavier on large subtrees.
+## Algorithms
 
----
+**V-Greedy** greedily expands a candidate subgraph from a root by considering successor frontier nodes and accepting the node that improves the objective the most. The k-subgraph routine repeatedly selects disjoint subgraphs.
 
-## Comparison
+**P-Greedy** is a tree-oriented greedy method that expands along root-to-node paths. It uses cumulative path statistics and a lazy heap strategy for selecting multiple non-overlapping subgraphs.
 
-- **V-Greedy**: fastest, lightweight heuristic; local frontier only.  
-- **P-Greedy**: path-aware greedy; considers entire root-to-node suffix; better than V-Greedy on trees.  
-- **OSS**: exact, but heavier on large subtrees.  
+**OSS** performs optimal-subtree-style enumeration with dominance filtering for a selected root. The repository also includes a lazy k-subgraph selection wrapper that calls the OSS root routine on candidate seeds.
 
----
+All methods use frequency-domain similarity between node time series and evaluate subgraphs using the implemented score based on similarity, node value, and subgraph size.
 
-## Notes
+## Minimal example
 
-- Node values may be preprocessed (e.g., log transform: `log2(value + 1)`) before running.  
-- Tie-breaking is deterministic: candidates are ordered by `str(node_id)`.  
-- **Guidelines**:  
-  - Use V-Greedy for quick approximate results.  
-  - Use P-Greedy for tree-structured data and better quality.  
-  - Use OSS when exact optimality is required.
-  - The method is similarity-agnostic: any function that maps two sequences to a real-valued score can be plugged in.
+Run the synthetic example without any external datasets:
+
+```bash
+python examples/minimal_demo.py
+```
+
+The script constructs a tiny directed tree, creates synthetic NumPy time series, runs V-Greedy, P-Greedy, and OSS, and prints the selected nodes and scores.
+
+## Citation
+
+Citation metadata is provided in `CITATION.cff`.
+
+```text
+Yihan Wu, Xuliang Zhu, Guozhong Li, Kai Wang, and Xuemin Lin. 2026.
+Structure-Aware Abstraction of Hierarchical Time Series.
+Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining.
+```
+
+No repository DOI is included yet. After creating a GitHub Release and connecting the repository to Zenodo, add the Zenodo-generated DOI to `CITATION.cff`.
+
+## License
+
+This repository is released under the MIT License. See `LICENSE`.
+
+## Artifact note for KDD 2026
+
+This repository is prepared for public artifact archiving for KDD 2026. It intentionally does not include large datasets, generated archives, release files, or a placeholder DOI. Create the GitHub Release first, connect it to Zenodo, and then update the citation metadata with the DOI generated by Zenodo.
