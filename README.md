@@ -10,17 +10,18 @@ The algorithms take a directed parent-to-child hierarchy and a time series attac
 
 ```text
 .
-├── V-Greedy.py              # Original V-Greedy implementation
-├── P-Greedy.py              # Original P-Greedy implementation
-├── oss.py                   # OSS implementation
-├── v_greedy.py              # Import-friendly wrapper for V-Greedy.py
-├── p_greedy.py              # Import-friendly wrapper for P-Greedy.py
-├── examples/
-│   └── minimal_demo.py      # Lightweight synthetic demo
-├── requirements.txt         # Python dependencies
-├── CITATION.cff             # Citation metadata
-├── LICENSE                  # MIT license
-└── README.md
++-- V-Greedy.py              # Original V-Greedy implementation
++-- P-Greedy.py              # Original P-Greedy implementation
++-- oss.py                   # OSS implementation
++-- v_greedy.py              # Import-friendly wrapper for V-Greedy.py
++-- p_greedy.py              # Import-friendly wrapper for P-Greedy.py
++-- examples/
+|   +-- minimal_demo.py      # Lightweight synthetic demo
++-- requirements.txt         # Python dependencies
++-- CITATION.cff             # GitHub/Zenodo citation metadata
++-- CITATION.bib             # BibTeX citation entries
++-- LICENSE                  # MIT license
++-- README.md
 ```
 
 The original files with hyphenated names are kept for compatibility. The wrapper files make the V-Greedy and P-Greedy implementations easier to import from Python code.
@@ -105,15 +106,26 @@ The script constructs a tiny directed tree, creates synthetic NumPy time series,
 
 ## Citation
 
-Citation metadata is provided in `CITATION.cff`.
+BibTeX citation entries are provided in `CITATION.bib`. Citation metadata for GitHub and Zenodo is also provided in `CITATION.cff`.
 
-```text
-Yihan Wu, Xuliang Zhu, Guozhong Li, Kai Wang, and Xuemin Lin. 2026.
-Structure-Aware Abstraction of Hierarchical Time Series.
-Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining.
+```bibtex
+@inproceedings{wu2026structureaware,
+  title = {Structure-Aware Abstraction of Hierarchical Time Series},
+  author = {Wu, Yihan and Zhu, Xuliang and Li, Guozhong and Wang, Kai and Lin, Xuemin},
+  booktitle = {Proceedings of the 32nd ACM SIGKDD Conference on Knowledge Discovery and Data Mining},
+  year = {2026}
+}
+
+@misc{wu2026htsaartifact,
+  title = {Structure-Aware Abstraction of Hierarchical Time Series},
+  author = {Wu, Yihan and Zhu, Xuliang and Li, Guozhong and Wang, Kai and Lin, Xuemin},
+  year = {2026},
+  url = {https://github.com/caracallium/htsa},
+  note = {KDD 2026 artifact repository}
+}
 ```
 
-No repository DOI is included yet. After creating a GitHub Release and connecting the repository to Zenodo, add the Zenodo-generated DOI to `CITATION.cff`.
+No repository DOI is included yet. After Zenodo generates the repository DOI, add the real DOI to `CITATION.cff` and `CITATION.bib`.
 
 ## License
 
